@@ -41,6 +41,17 @@ def get_cart_quotation(doc=None):
 		set_cart_count(quotation)
 
 	addresses = get_address_docs(party=party)
+	click_n_collect_warehouses = frappe.db.get_all('Warehouse', {'avaible_on_website': True}, ['name', 'warehouse_name'])
+	click_n_collect_addresses = get_wh_addresses(click_n_collect_warehouses)
+	d_date = doc.delivery_date
+	if doc.items:
+		payment_terms_template = update_payment_terms(get_shopping_cart_settings().payment_terms_template)
+		tc_name = update_tc(get_shopping_cart_settings().terms_and_conditions)
+		if not doc.customer_address and addresses:
+			update_cart_address("billing", addresses[0].name)
+	else:
+		payment_terms_template = None
+		tc_name = None
 
 	if not doc.customer_address and addresses:
 		update_cart_address("billing", addresses[0].name)
@@ -50,6 +61,11 @@ def get_cart_quotation(doc=None):
 		"shipping_addresses": get_shipping_addresses(party),
 		"billing_addresses": get_billing_addresses(party),
 		"shipping_rules": get_applicable_shipping_rules(party),
+		"delivery_date": d_date,
+		"tc_name": tc_name,
+		"terms": get_terms_and_conditions(tc_name),
+		"payment_terms_template": payment_terms_template,
+		"click_n_collect_addresses": [{"name": address.name, "title": address.address_title, "display": address.display} for address in click_n_collect_addresses],
 		"cart_settings": frappe.get_cached_doc("Webshop Settings"),
 	}
 
@@ -91,9 +107,9 @@ def place_order():
 	quotation = _get_cart_quotation()
 	cart_settings = frappe.get_cached_doc("Webshop Settings")
 	quotation.company = cart_settings.company
-
-	quotation.flags.ignore_permissions = True
-	quotation.submit()
+	quotation.tc_name = cart_settings.terms_and_conditions
+	quotation.terms = get_terms_and_conditions(quotation.tc_name)
+	choose_delivery_date = cart_settings.choose_delivery_date
 
 	if quotation.quotation_to == "Lead" and quotation.party_name:
 		# company used to create customer accounts
@@ -101,6 +117,13 @@ def place_order():
 
 	if not (quotation.shipping_address_name or quotation.customer_address):
 		frappe.throw(_("Set Shipping Address or Billing Address"))
+
+	if choose_delivery_date:
+		update_delivery_date(delivery_date=quotation.delivery_date)
+		quotation = _get_cart_quotation()
+
+	quotation.flags.ignore_permissions = True
+	quotation.submit()
 
 	customer_group = cart_settings.default_customer_group
 
@@ -153,6 +176,29 @@ def request_for_quotation():
 
 	return quotation.name
 
+@frappe.whitelist()
+def update_delivery_date(delivery_date=None):
+	quotation = _get_cart_quotation()
+	minimum_d_day = frappe.db.get_single_value("Webshop Settings", "minimum_days_delivery_date")
+	minimum_d_date = datetime.datetime.strptime(add_days(now(), minimum_d_day)[:19], '%Y-%m-%d %H:%M:%S' )
+	if not isinstance(delivery_date, datetime.datetime):
+		d_date = datetime.datetime.strptime(delivery_date, "%d/%m/%Y %H:%M:%S")
+		if d_date < minimum_d_date:
+			frappe.throw(_("La date & l'heure de livraison minimales sont {0}").format(format_datetime(minimum_d_date)))
+		else:
+			quotation.delivery_date = d_date
+			quotation.flags.ignore_permissions = True
+			quotation.save()
+	else:
+		d_date = delivery_date
+		if d_date < minimum_d_date:
+			frappe.throw(_("La date & l'heure de livraison minimales sont {0}").format(format_datetime(minimum_d_date)))
+		else:
+			quotation.delivery_date = d_date
+			quotation.flags.ignore_permissions = True
+			quotation.save()
+
+	return d_date
 
 @frappe.whitelist()
 def update_cart(item_code, qty, additional_notes=None, with_items=False):
@@ -389,6 +435,8 @@ def _get_cart_quotation(party=None):
 	if quotation:
 		qdoc = frappe.get_doc("Quotation", quotation[0].name)
 	else:
+		minimum_d_day = frappe.db.get_single_value("Webshop Settings", "minimum_days_delivery_date")
+		minimum_d_date = datetime.datetime.strptime(add_days(now(), minimum_d_day)[:19], '%Y-%m-%d %H:%M:%S' )
 		company = frappe.db.get_single_value("Webshop Settings", "company")
 		qdoc = frappe.get_doc(
 			{
@@ -409,6 +457,7 @@ def _get_cart_quotation(party=None):
 			"Contact", {"email_id": frappe.session.user}
 		)
 		qdoc.contact_email = frappe.session.user
+		qdoc.delivery_date = minimum_d_date
 
 		qdoc.flags.ignore_permissions = True
 		qdoc.run_method("set_missing_values")

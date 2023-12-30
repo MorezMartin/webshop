@@ -28,9 +28,15 @@
   "price_list",
   "enabled",
   "store_page_docs",
+  "choose_delivery_date",
+  "minimum_days_delivery_date",
+  "enable_click_and_collect",
+  "choose_shipping_rule",
   "column_break_21",
   "default_customer_group",
   "quotation_series",
+  "terms_and_conditions",
+  "payment_terms_template",
   "checkout_settings_section",
   "enable_checkout",
   "show_price_in_quotation",
@@ -141,6 +147,41 @@
    "fieldname": "enable_variants",
    "fieldtype": "Check",
    "label": "Enable Variant Selection"
+  },
+  {
+   "default": "0",
+   "fieldname": "choose_delivery_date",
+   "fieldtype": "Check",
+   "label": "Choose Delivery Date"
+  },
+  {
+   "fieldname": "minimum_days_delivery_date",
+   "fieldtype": "Float",
+   "label": "Minimum Days Delivery Date"
+  },
+  {
+   "fieldname": "terms_and_conditions",
+   "fieldtype": "Link",
+   "label": "Terms and Conditions",
+   "options": "Terms and Conditions"
+  },
+  {
+   "fieldname": "payment_terms_template",
+   "fieldtype": "Link",
+   "label": "Payment Terms Template",
+   "options": "Payment Terms Template"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_click_and_collect",
+   "fieldtype": "Check",
+   "label": "Enable Click and Collect"
+  },
+  {
+   "default": "0",
+   "fieldname": "choose_shipping_rule",
+   "fieldtype": "Check",
+   "label": "Choose shipping rule"
   },
   {
    "fieldname": "column_break_13",
