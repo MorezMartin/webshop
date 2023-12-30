@@ -6,7 +6,7 @@ import frappe.defaults
 from frappe import _, throw
 from frappe.contacts.doctype.address.address import get_address_display
 from frappe.contacts.doctype.contact.contact import get_contact_name
-from frappe.utils import cint, cstr, flt, get_fullname
+from frappe.utils import cint, cstr, flt, get_fullname, add_days, now, datetime, format_datetime
 from frappe.utils.nestedset import get_root_of
 
 from erpnext.accounts.utils import get_account_name
@@ -323,6 +323,18 @@ def create_lead_for_item_inquiry(lead, subject, message):
 def get_terms_and_conditions(terms_name):
 	return frappe.db.get_value("Terms and Conditions", terms_name, "terms")
 
+def update_tc(terms_name):
+	quotation = _get_cart_quotation()
+	quotation.flags.ignore_permissions = True
+	quotation.tc_name = terms_name
+	quotation.save()
+
+def update_payment_terms(payment_terms_template):
+	quotation = _get_cart_quotation()
+	quotation.flags.ignore_permissions = True
+	quotation.payment_terms_template = payment_terms_template
+	quotation.payment_schedule = []
+	quotation.save()
 
 @frappe.whitelist()
 def update_cart_address(address_type, address_name):
@@ -683,6 +695,19 @@ def get_debtors_account(cart_settings):
 	else:
 		return debtors_account_name
 
+def get_wh_addresses(warehouses):
+	address_names = []
+	for warehouse in warehouses:
+		address_names += frappe.db.get_all('Dynamic Link', fields=('parent'),
+			filters=dict(parenttype='Address', link_doctype='Warehouse', link_name=warehouse.name))
+
+	out = []
+	for a in address_names:
+		address = frappe.get_doc('Address', a.parent)
+		address.display = get_address_display(address.as_dict())
+		out.append(address)
+	
+	return out
 
 def get_address_docs(
     doctype=None,
