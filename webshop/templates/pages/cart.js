@@ -1,9 +1,23 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
 
-// JS exclusive to /cart page
-frappe.provide("webshop.webshop.shopping_cart");
-var shopping_cart = webshop.webshop.shopping_cart;
+
+// shopping cart
+frappe.provide("erpnext.e_commerce.shopping_cart");
+var shopping_cart = erpnext.e_commerce.shopping_cart;
+
+frappe.boot = {
+	sysdefaults: {
+		float_precision: parseInt("{{ frappe.get_system_settings('float_precision') or 3 }}"),
+		date_format: "{{ frappe.get_system_settings('date_format') or 'yyyy-mm-dd' }}",
+		/* time_zone: "Europe/Paris",*/
+		/*language: "fr",*/
+	},
+	user: {
+		language: navigator.language,
+	}
+};
+frappe.sys_defaults = frappe.boot.sysdefaults;
 
 $.extend(shopping_cart, {
 	show_error: function(title, text) {
@@ -12,19 +26,21 @@ $.extend(shopping_cart, {
 	},
 
 	bind_events: function() {
+		shopping_cart.bind_shipping_rule_dialog();
 		shopping_cart.bind_address_picker_dialog();
 		shopping_cart.bind_place_order();
 		shopping_cart.bind_request_quotation();
 		shopping_cart.bind_change_qty();
 		shopping_cart.bind_remove_cart_item();
 		shopping_cart.bind_change_notes();
+		shopping_cart.bind_change_delivery_date();
 		shopping_cart.bind_coupon_code();
 	},
 
 	bind_address_picker_dialog: function() {
 		const d = this.get_update_address_dialog();
 		this.parent.find('.btn-change-address').on('click', (e) => {
-			const type = $(e.currentTarget).parents('.address-container').attr('data-address-type');
+			const type = $(e.currentTarget).parents('.addresses-container').attr('data-address-type');
 			$(d.get_field('address_picker').wrapper).html(
 				this.get_address_template(type)
 			);
@@ -34,19 +50,19 @@ $.extend(shopping_cart, {
 
 	get_update_address_dialog() {
 		let d = new frappe.ui.Dialog({
-			title: "Select Address",
+			title: __("Choisir l'adresse"),
 			fields: [{
 				'fieldtype': 'HTML',
 				'fieldname': 'address_picker',
 			}],
-			primary_action_label: __('Set Address'),
+			primary_action_label: __("Définir l'adresse"),
 			primary_action: () => {
 				const $card = d.$wrapper.find('.address-card.active');
 				const address_type = $card.closest('[data-address-type]').attr('data-address-type');
 				const address_name = $card.closest('[data-address-name]').attr('data-address-name');
 				frappe.call({
 					type: "POST",
-					method: "webshop.webshop.shopping_cart.cart.update_cart_address",
+					method: "erpnext.e_commerce.shopping_cart.cart.update_cart_address",
 					freeze: true,
 					args: {
 						address_type,
@@ -57,8 +73,8 @@ $.extend(shopping_cart, {
 						if (!r.exc) {
 							$(".cart-tax-items").html(r.message.total);
 							shopping_cart.parent.find(
-								`.address-container[data-address-type="${address_type}"]`
-							).html(r.message.address);
+								`.addresses-container[data-address-type="${address_type}"]`
+							).find(".callback-container").html(r.message.address);
 						}
 					}
 				});
@@ -79,13 +95,25 @@ $.extend(shopping_cart, {
 						</div>
 					{% endfor %}
 				</div>
+				<a href="/address/new?address_type=Shipping" class="btn btn-outline-primary btn-sm mt-3 btn-new-address">Ajouter une nouvelle adresse</a>
 			</div>`,
 			billing: `<div class="mb-3" data-section="billing-address">
 				<div class="row no-gutters" data-fieldname="customer_address">
 					{% for address in billing_addresses %}
 						<div class="mr-3 mb-3 w-100" data-address-name="{{address.name}}" data-address-type="billing"
-							{% if doc.shipping_address_name == address.name %} data-active {% endif %}>
+							{% if doc.customer_address == address.name %} data-active {% endif %}>
 							{% include "templates/includes/cart/address_picker_card.html" %}
+						</div>
+					{% endfor %}
+				</div>
+				<a href="/address/new?address_type=Billing" class="btn btn-outline-primary btn-sm mt-3 btn-new-address">Ajouter une nouvelle adresse</a>
+			</div>`,
+			click_n_collect: `<div class="mb-3" data-section="click-n-collect-address">
+				<div class="row no-gutters" data-fieldname="shipping_address_name">
+					{% for address in click_n_collect_addresses %}
+						<div class="mr-3 mb-3 w-100" data-address-name="{{address.name}}" data-address-type="click_n_collect"
+							{% if doc.shipping_address_name == address.name %} data-active {% endif %}>
+							{% include "templates/includes/cart/address_picker_card_wh.html" %}
 						</div>
 					{% endfor %}
 				</div>
@@ -93,9 +121,77 @@ $.extend(shopping_cart, {
 		}[type];
 	},
 
+	bind_shipping_rule_dialog: function() {
+		const d = this.get_update_shipping_rule_dialog();
+		this.parent.find('.btn-change-shipping-rule').on('click', (e) => {
+			$(d.get_field('shipping_rule_picker').wrapper).html(
+				this.get_shipping_rule_template()
+			);
+			d.show();
+		});
+	},
+	get_update_shipping_rule_dialog: function() {
+		let d = new frappe.ui.Dialog({
+			title: __("Choisir la règle de livraison"),
+			fields: [{
+				'fieldtype': 'HTML',
+				'fieldname': 'shipping_rule_picker',
+			}],
+			primary_action_label: __('Choisir la règle de livraison'),
+			primary_action: () => {
+				const $card = d.$wrapper.find('.shipping-card.active');
+				const shipping_rule_name = $card.closest('[data-shipping-rule-name]').attr('data-shipping-rule-name');
+				frappe.call({
+					type: "POST",
+					method: "erpnext.e_commerce.shopping_cart.cart.apply_shipping_rule",
+					freeze: true,
+					args: { shipping_rule: shipping_rule_name },
+					callback: function(r) {
+						d.hide();
+						if (!r.exc) {
+							$(".cart-tax-items").html(r.message.taxes);
+							shopping_cart.parent
+								.find(".shipping-rules-container")
+								.find(".callback-container")
+								.html(r.message.shipping_rule);
+							shopping_cart.parent.find(".cart-addresses").html(r.message.cart_address);
+							shopping_cart.bind_address_picker_dialog();
+							$(".btn-update-addresses").trigger("click");
+						}
+					}
+				});
+			}
+		});
+
+		return d;
+
+	},
+	get_shipping_rule_template() {
+		return `<div class="mb-3" data-section="shipping-rule">
+				<div class="row no-gutters" data-fieldname="shipping_rule_name">
+					{% set shipping_rules = frappe.db.get_all('Shipping Rule', fields=['name', 'description', 'avaible_for_website', 'click_n_collect'], filters={"avaible_for_website": True})%}
+					{% for rule in shipping_rules %}
+						<div class="mr-3 mb-3 w-100" data-shipping-rule-name="{{rule.name}}" {% if rule.click_n_collect == 1 %} data-click-n-collect {% endif %} {% if doc.shipping_rule == rule.name %} data-active {% endif %}>
+							{% include "templates/includes/cart/shipping_rule_picker_card.html" %}
+						</div>
+					{% endfor %}
+				</div>
+			</div>`
+	},
+
+
 	bind_place_order: function() {
 		$(".btn-place-order").on("click", function() {
-			shopping_cart.place_order(this);
+			const billing_address = $('[data-fieldname="customer_address"]').find('.address-container').is('[data-active]');
+			const shipping_address = $('[data-fieldname="shipping_address_name"]').find('.address-container').is('[data-active]');
+			const shipping_rule = $('[data-shipping-rule-name]').is('[data-active]');
+			const input_same_billing = $('#input_same_billing').is(':checked');
+			if (Boolean(shipping_address) && Boolean(shipping_rule)) {
+				if (Boolean(billing_address)) { shopping_cart.place_order(this) }
+				else if (Boolean(input_same_billing)) { shopping_cart.place_order(this) }
+				else { frappe.throw("{{_('Please select shipping and addresses')}}") }
+			}
+			else { frappe.throw("{{_('Please select shipping and addresses')}}") }
 		});
 	},
 
@@ -152,6 +248,30 @@ $.extend(shopping_cart, {
 		});
 	},
 
+	bind_change_delivery_date: function() {
+		var me = this
+		var delivery_date = frappe.ui.form.make_control({
+			df: {
+				fieldtype: 'Datetime',
+				fieldname: 'delivery_date',
+				label: '{{_("Pick or Delivery Date")}}',
+				hide_timezone: true,
+			},
+			change: function() { 
+				var d_date = this.$input.val();
+				frappe.call({
+					type: "POST",
+					method: "erpnext.e_commerce.shopping_cart.cart.update_delivery_date",
+					args: { delivery_date: d_date }
+				})
+			},
+			parent: $('#delivery_date'),
+			render_input: true
+		});
+	},
+
+
+
 	bind_remove_cart_item: function() {
 		$(".cart-items").on("click", ".remove-cart-item", (e) => {
 			const $remove_cart_item_btn = $(e.currentTarget);
@@ -201,7 +321,7 @@ $.extend(shopping_cart, {
 		return frappe.call({
 			btn: btn,
 			type: "POST",
-			method: "webshop.webshop.shopping_cart.cart.apply_shipping_rule",
+			method: "erpnext.e_commerce.shopping_cart.cart.apply_shipping_rule",
 			args: { shipping_rule: rule },
 			callback: function(r) {
 				if(!r.exc) {
@@ -212,15 +332,13 @@ $.extend(shopping_cart, {
 	},
 
 	place_order: function(btn) {
-		shopping_cart.freeze();
-
 		return frappe.call({
 			type: "POST",
-			method: "webshop.webshop.shopping_cart.cart.place_order",
+			method: "erpnext.e_commerce.shopping_cart.cart.place_order",
 			btn: btn,
+			freeze: true,
 			callback: function(r) {
 				if(r.exc) {
-					shopping_cart.unfreeze();
 					var msg = "";
 					if(r._server_messages) {
 						msg = JSON.parse(r._server_messages || []).join("<br>");
@@ -239,12 +357,10 @@ $.extend(shopping_cart, {
 	},
 
 	request_quotation: function(btn) {
-		shopping_cart.freeze();
-
 		return frappe.call({
 			type: "POST",
-			method: "webshop.webshop.shopping_cart.cart.request_for_quotation",
-			btn: btn,
+			method: "erpnext.e_commerce.shopping_cart.cart.request_for_quotation",
+			freeze: true,
 			callback: function(r) {
 				if(r.exc) {
 					shopping_cart.unfreeze();
@@ -274,7 +390,7 @@ $.extend(shopping_cart, {
 	apply_coupon_code: function(btn) {
 		return frappe.call({
 			type: "POST",
-			method: "webshop.webshop.shopping_cart.cart.apply_coupon_code",
+			method: "erpnext.e_commerce.shopping_cart.cart.apply_coupon_code",
 			btn: btn,
 			args : {
 				applied_code : $('.txtcoupon').val(),
@@ -290,9 +406,7 @@ $.extend(shopping_cart, {
 });
 
 frappe.ready(function() {
-	if (window.location.pathname === "/cart") {
-		$(".cart-icon").hide();
-	}
+	$(".cart-icon").hide();
 	shopping_cart.parent = $(".cart-container");
 	shopping_cart.bind_events();
 });
