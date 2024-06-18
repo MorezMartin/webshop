@@ -3,8 +3,8 @@
 
 
 // shopping cart
-frappe.provide("erpnext.e_commerce.shopping_cart");
-var shopping_cart = erpnext.e_commerce.shopping_cart;
+frappe.provide("webshop.webshop.shopping_cart");
+var shopping_cart = webshop.webshop.shopping_cart;
 
 frappe.boot = {
 	sysdefaults: {
