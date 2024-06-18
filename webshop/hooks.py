@@ -12,7 +12,8 @@ required_apps = ["payments", "erpnext"]
 
 web_include_css = "webshop-web.bundle.css"
 
-web_include_js = "web.bundle.js"
+web_include_js = ["web.bundle.js", "frappe-web.bundle.css", "controls.bundle.js", "dialog.bundle.js"]
+
 
 after_install = "webshop.setup.install.after_install"
 on_logout = "webshop.webshop.shopping_cart.utils.clear_cart_count"
