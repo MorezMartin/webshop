@@ -1,0 +1,9 @@
+{% set choose_delivery_date = frappe.db.get_single_value('Webshop Settings', 'choose_delivery_date') %}
+{% set choose_delivery_date = cart_settings.choose_delivery_date %}
+{% if choose_delivery_date %}
+{% set choose_delivery_date = frappe.db.get_single_value('Webshop Settings', 'minimum_days_delivery_date') %}
+{% set now = frappe.utils.now() %}
+<div id="delivery_date"></div>
+<link type="text/css" rel="stylesheet" href="/assets/frappe/node_modules/air-datepicker/dist/css/datepicker.min.css">
+
+{% endif %}
