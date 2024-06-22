@@ -25,7 +25,7 @@ frappe.ready(() => {
 			} else {
 				frappe.call({
 					type: "POST",
-					method: "erpnext.e_commerce.shopping_cart.cart.update_cart_address",
+					method: "webshop.shopping_cart.cart.update_cart_address",
 					freeze: true,
 					args: {
 						address_type: "billing",
@@ -111,10 +111,10 @@ frappe.ready(() => {
 			],
 			primary_action_label: __('Save'),
 			primary_action: (values) => {
-				frappe.call('erpnext.e_commerce.shopping_cart.cart.add_new_address', { doc: values })
+				frappe.call('webshop.shopping_cart.cart.add_new_address', { doc: values })
 					.then(r => {
 						frappe.call({
-							method: "erpnext.e_commerce.shopping_cart.cart.update_cart_address",
+							method: "webshop.shopping_cart.cart.update_cart_address",
 							args: {
 								address_type: r.message.address_type,
 								address_name: r.message.name

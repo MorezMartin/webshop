@@ -1,10 +1,10 @@
-{% from "erpnext/templates/includes/cart/cart_macros.html" import show_address %}
+{% from "webshop/templates/includes/cart/cart_macros.html" import show_address %}
 
 {% if addresses | length == 1%}
 	{% set select_address = True %}
 {% endif %}
 
-{% set choose_shipping_rule = frappe.db.get_single_value('E Commerce Settings', 'choose_shipping_rule') %}
+{% set choose_shipping_rule = frappe.db.get_single_value('Webshop Settings', 'choose_shipping_rule') %}
 {% if choose_shipping_rule == True %}
 <div class="mb-3 addresses-container" data-section="click-n-collect-address" data-address-type="click_n_collect">
 	<div class="btn btn-sm btn-default btn-change-address">
