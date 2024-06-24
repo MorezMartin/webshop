@@ -261,7 +261,7 @@ $.extend(shopping_cart, {
 				var d_date = this.$input.val();
 				frappe.call({
 					type: "POST",
-					method: "erpnext.e_commerce.shopping_cart.cart.update_delivery_date",
+					method: "webshop.shopping_cart.cart.update_delivery_date",
 					args: { delivery_date: d_date }
 				})
 			},
