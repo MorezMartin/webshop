@@ -1,0 +1,19 @@
+{% set shipping_rules = frappe.db.get_all('Shipping Rule', fields=['name', 'description', 'avaible_for_website', 'click_n_collect'], filters={"avaible_for_website": True})%}
+<div class="mb-3 shipping-rules-container">
+	<div data-section="shipping-rule">
+		<div class="btn btn-sm btn-default btn-change-shipping-rule">
+			<h6>{{ _("Choose Shipping Rule") }}</h6>
+		</div>
+		<span class="btn-update-addresses"></span>
+		<div class="row no-gutters callback-container" data-fieldname="shipping_rule_name">
+		{% for rule in shipping_rules %}
+		{% if doc.shipping_rule == rule.name %}
+			{% include "templates/includes/cart/shipping_rule_card.html" %}
+		{% endif %}
+		{% endfor %}
+		</div>
+	</div>
+</div>
+{% block script %}
+<script>{% include "templates/includes/cart/cart_shipping_rule.js" %}</script>
+{% endblock %}
