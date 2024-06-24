@@ -1,0 +1,5 @@
+<div class="mr-2 mb-2 p2 w100 shipping-rule-container" data-shipping-rule-name="{{rule.name}}"{% if rule.click_n_collect == 1 %} data-click-n-collect {% endif %} {% if doc.shipping_rule == rule.name %} data-active {% endif %}>
+	<div class="card h-100">
+		<h5 class="card-title">{{ rule.name }}</h5>
+	</div>
+</div>
