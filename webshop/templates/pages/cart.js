@@ -62,7 +62,7 @@ $.extend(shopping_cart, {
 				const address_name = $card.closest('[data-address-name]').attr('data-address-name');
 				frappe.call({
 					type: "POST",
-					method: "erpnext.e_commerce.shopping_cart.cart.update_cart_address",
+					method: "webshop.webshop.shopping_cart.cart.update_cart_address",
 					freeze: true,
 					args: {
 						address_type,
@@ -143,7 +143,7 @@ $.extend(shopping_cart, {
 				const shipping_rule_name = $card.closest('[data-shipping-rule-name]').attr('data-shipping-rule-name');
 				frappe.call({
 					type: "POST",
-					method: "erpnext.e_commerce.shopping_cart.cart.apply_shipping_rule",
+					method: "webshop.webshop.shopping_cart.cart.apply_shipping_rule",
 					freeze: true,
 					args: { shipping_rule: shipping_rule_name },
 					callback: function(r) {
@@ -261,7 +261,7 @@ $.extend(shopping_cart, {
 				var d_date = this.$input.val();
 				frappe.call({
 					type: "POST",
-					method: "webshop.shopping_cart.cart.update_delivery_date",
+					method: "webshop.webshop.shopping_cart.cart.update_delivery_date",
 					args: { delivery_date: d_date }
 				})
 			},
@@ -321,7 +321,7 @@ $.extend(shopping_cart, {
 		return frappe.call({
 			btn: btn,
 			type: "POST",
-			method: "erpnext.e_commerce.shopping_cart.cart.apply_shipping_rule",
+			method: "webshop.webshop.shopping_cart.cart.apply_shipping_rule",
 			args: { shipping_rule: rule },
 			callback: function(r) {
 				if(!r.exc) {
@@ -334,7 +334,7 @@ $.extend(shopping_cart, {
 	place_order: function(btn) {
 		return frappe.call({
 			type: "POST",
-			method: "erpnext.e_commerce.shopping_cart.cart.place_order",
+			method: "webshop.webshop.shopping_cart.cart.place_order",
 			btn: btn,
 			freeze: true,
 			callback: function(r) {
@@ -359,7 +359,7 @@ $.extend(shopping_cart, {
 	request_quotation: function(btn) {
 		return frappe.call({
 			type: "POST",
-			method: "erpnext.e_commerce.shopping_cart.cart.request_for_quotation",
+			method: "webshop.webshop.shopping_cart.cart.request_for_quotation",
 			freeze: true,
 			callback: function(r) {
 				if(r.exc) {
@@ -390,7 +390,7 @@ $.extend(shopping_cart, {
 	apply_coupon_code: function(btn) {
 		return frappe.call({
 			type: "POST",
-			method: "erpnext.e_commerce.shopping_cart.cart.apply_coupon_code",
+			method: "webshop.webshop.shopping_cart.cart.apply_coupon_code",
 			btn: btn,
 			args : {
 				applied_code : $('.txtcoupon').val(),
