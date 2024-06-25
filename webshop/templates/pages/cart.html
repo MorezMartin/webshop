@@ -6,7 +6,7 @@
 
 {% block script %}
 <script type="text/javascript">
-	frappe.boot = JSON.parse({{boot}})
+	frappe.boot = {{boot}};
 	frappe.sys_defaults = frappe.boot.sysdefaults
 </script>
 {% endblock %}
