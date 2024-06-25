@@ -5,6 +5,8 @@
 // shopping cart
 frappe.provide("webshop.webshop.shopping_cart");
 var shopping_cart = webshop.webshop.shopping_cart;
+frappe.boot = {{ boot }};
+frappe.sys_defaults = frappe.boot.sysdefaults;
 
 $.extend(shopping_cart, {
 	show_error: function (title, text) {
