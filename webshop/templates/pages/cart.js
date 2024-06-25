@@ -6,18 +6,10 @@
 frappe.provide("webshop.webshop.shopping_cart");
 var shopping_cart = webshop.webshop.shopping_cart;
 
-frappe.boot = {
-	sysdefaults: {
-		float_precision: parseInt("{{ frappe.get_system_settings('float_precision') or 3 }}"),
-		date_format: "{{ frappe.get_system_settings('date_format') or 'yyyy-mm-dd' }}",
-		/* time_zone: "Europe/Paris",*/
-		/*language: "fr",*/
-	},
-	user: {
-		language: navigator.language,
+frappe.boot.user: {
+		language: navigator.language
 	}
 };
-frappe.sys_defaults = frappe.boot.sysdefaults;
 
 $.extend(shopping_cart, {
 	show_error: function(title, text) {
