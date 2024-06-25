@@ -6,7 +6,7 @@
 frappe.provide("webshop.webshop.shopping_cart");
 var shopping_cart = webshop.webshop.shopping_cart;
 
-frappe.boot.user: {
+frappe.boot.user = {
 		language: navigator.language
 	}
 };
