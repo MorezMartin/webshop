@@ -8,8 +8,7 @@ var shopping_cart = webshop.webshop.shopping_cart;
 
 frappe.boot.user = {
 		language: navigator.language
-	}
-};
+	};
 
 $.extend(shopping_cart, {
 	show_error: function(title, text) {
