@@ -6,9 +6,6 @@
 frappe.provide("webshop.webshop.shopping_cart");
 var shopping_cart = webshop.webshop.shopping_cart;
 
-frappe.boot['user'] = {language : navigator.language};
-frappe.sys_defaults = frappe.boot.sysdefaults;
-
 $.extend(shopping_cart, {
 	show_error: function(title, text) {
 		$("#cart-container").html('<div class="msg-box"><h4>' +
