@@ -12,7 +12,7 @@ required_apps = ["payments", "erpnext"]
 
 web_include_css = "webshop-web.bundle.css"
 
-web_include_js = ["web.bundle.js", "controls.bundle.js", "dialog.bundle.js"]
+web_include_js = ["web.bundle.js"]
 
 
 after_install = "webshop.setup.install.after_install"
