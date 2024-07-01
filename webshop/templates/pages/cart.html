@@ -4,6 +4,10 @@
 
 {% block header %}<h3 class="shopping-cart-header mt-2 mb-6">{{ _("Shopping Cart") }}</h1>{% endblock %}
 
+{% block script %}
+<script>{% include "templates/pages/cart.js" %}</script>
+{% endblock %}
+
 {% block header_actions %}
 {% endblock %}
 
@@ -156,15 +160,4 @@
 	{% endif %}
 </div>
 {% endif %}
-	{% block base_scripts %}
-	<!-- js should be loaded in body! -->
-	<script>
-		frappe.boot = {{ boot }}
-		// for backward compatibility of some libs
-		frappe.sys_defaults = frappe.boot.sysdefaults;
-	</script>
-	{{ include_script("frappe-web.bundle.js") }}
-	{{ include_script("controls.bundle.js") }}
-	{{ include_script("dialog.bundle.js") }}
-	{% endblock %}
 {% endblock %}
