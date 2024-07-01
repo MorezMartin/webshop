@@ -201,68 +201,45 @@ def update_delivery_date(delivery_date=None):
 	return d_date
 
 @frappe.whitelist()
-def update_cart(item_code, qty, additional_notes=None, with_items=False):
+def update_cart_address(address_type, address_name):
 	quotation = _get_cart_quotation()
+	address_doc = frappe.get_doc("Address", address_name).as_dict()
+	address_display = get_address_display(address_doc)
+	address_template = "templates/includes/cart/address_card.html"
 
-	empty_card = False
-	qty = flt(qty)
-	if qty == 0:
-		quotation_items = quotation.get("items", {"item_code": ["!=", item_code]})
-		if quotation_items:
-			quotation.set("items", quotation_items)
-		else:
-			empty_card = True
-
-	else:
-		warehouse = frappe.get_cached_value(
-			"Website Item", {"item_code": item_code}, "website_warehouse"
+	if address_type.lower() == "billing":
+		quotation.customer_address = address_name
+		quotation.address_display = address_display
+		quotation.shipping_address_name = quotation.shipping_address_name or address_name
+		address_doc = next((doc for doc in get_billing_addresses() if doc["name"] == address_name), None)
+	elif address_type.lower() == "shipping":
+		quotation.shipping_address_name = address_name
+		quotation.shipping_address = address_display
+		quotation.customer_address = quotation.customer_address or address_name
+		address_doc = next(
+			(doc for doc in get_shipping_addresses() if doc["name"] == address_name), None
 		)
-
-		quotation_items = quotation.get("items", {"item_code": item_code})
-		if not quotation_items:
-			quotation.append(
-				"items",
-				{
-					"doctype": "Quotation Item",
-					"item_code": item_code,
-					"qty": qty,
-					"additional_notes": additional_notes,
-					"warehouse": warehouse,
-				},
-			)
-		else:
-			quotation_items[0].qty = qty
-			quotation_items[0].warehouse = warehouse
-			quotation_items[0].additional_notes = additional_notes
-
+	elif address_type.lower() == "click_n_collect":
+		quotation.shipping_address_name = address_name
+		quotation.shipping_address = address_display
+		quotation.customer_address = quotation.customer_address or address_name
+		address_template = "templates/includes/cart/address_card_wh.html"
+		addr_obj = address_doc
+		address_doc = { "name": address_doc.name, "title": address_doc.address_title, "display": address_display }
 	apply_cart_settings(quotation=quotation)
 
 	quotation.flags.ignore_permissions = True
-	quotation.payment_schedule = []
-	if not empty_card:
-		quotation.save()
-	else:
-		quotation.delete()
-		quotation = None
+	quotation.save()
 
-	set_cart_count(quotation)
+	context = get_cart_quotation(quotation)
+	context["address"] = address_doc
 
-	if cint(with_items):
-		context = get_cart_quotation(quotation)
-		return {
-			"items": frappe.render_template(
-				"templates/includes/cart/cart_items.html", context
-			),
-			"total": frappe.render_template(
-				"templates/includes/cart/cart_items_total.html", context
-			),
-			"taxes_and_totals": frappe.render_template(
-				"templates/includes/cart/cart_payment_summary.html", context
-			),
-		}
-	else:
-		return {"name": quotation.name}
-
+	return {
+		"taxes": frappe.render_template("templates/includes/cart/cart_items_total.html",
+			context),
+		"address": frappe.render_template(address_template,
+			context)
+	}
 
 @frappe.whitelist()
 def get_shopping_cart_menu(context=None):
