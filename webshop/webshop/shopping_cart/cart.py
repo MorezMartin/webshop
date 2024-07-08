@@ -752,8 +752,19 @@ def apply_shipping_rule(shipping_rule):
 	quotation.flags.ignore_permissions = True
 	quotation.save()
 
-	return get_cart_quotation(quotation)
+	context =  get_cart_quotation(quotation)
+	sr_doc = frappe.get_doc("Shipping Rule", shipping_rule)
+	rule = { "name": shipping_rule, "description": sr_doc.description, "click_n_collect": sr_doc.click_n_collect  }
+	context["rule"] = rule
 
+	return {
+		"taxes": frappe.render_template("templates/includes/cart/cart_items_total.html",
+			context),
+		"shipping_rule": frappe.render_template("templates/includes/cart/shipping_rule_card.html",
+			context),
+		"cart_address": frappe.render_template("templates/includes/cart/cart_address.html",
+			context),
+		}
 
 def _apply_shipping_rule(party=None, quotation=None, cart_settings=None):
 	if not quotation.shipping_rule:
