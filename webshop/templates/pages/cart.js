@@ -243,7 +243,7 @@ $.extend(shopping_cart, {
 				placeholder: function() {
 					frappe.call ({
 						type: "POST",
-						method: "webshop.webshop.shopping_cart.get_delivery_date"
+						method: "webshop.webshop.shopping_cart.cart.get_delivery_date"
 					})
 
 				},
