@@ -25,7 +25,7 @@ frappe.ready(() => {
 			} else {
 				frappe.call({
 					type: "POST",
-					method: "webshop.shopping_cart.cart.update_cart_address",
+					method: "webshop.webshop.shopping_cart.cart.update_cart_address",
 					freeze: true,
 					args: {
 						address_type: "billing",
