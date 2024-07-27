@@ -189,6 +189,7 @@ def update_delivery_date(delivery_date=None):
 	minimum_d_date = add_days(get_datetime(now()), minimum_d_day)
 	if delivery_date == None:
 		d_date = minimum_d_date
+        return d_date
 	if not isinstance(delivery_date, datetime.datetime):
 		d_date = get_datetime(delivery_date)
 	else:
@@ -242,7 +243,6 @@ def update_cart(item_code, qty, additional_notes=None, with_items=False):
 	quotation.flags.ignore_permissions = True
 	quotation.payment_schedule = []
 	if not empty_card:
-		update_delivery_date()
 		quotation.save()
 	else:
 		quotation.delete()
@@ -470,6 +470,9 @@ def _get_cart_quotation(party=None):
 			"Contact", {"email_id": frappe.session.user}
 		)
 		qdoc.contact_email = frappe.session.user
+        minimum_d_day = frappe.db.get_single_value("Webshop Settings", "minimum_days_delivery_date")
+        minimum_d_date = add_days(get_datetime(now()), minimum_d_day)
+        qdoc.delivery_date = minimum_d_date
 
 		qdoc.flags.ignore_permissions = True
 		qdoc.run_method("set_missing_values")
