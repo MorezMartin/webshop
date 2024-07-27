@@ -130,7 +130,7 @@
 					})
 				});
 				function show_terms_and_conditions(terms_name) {
-					frappe.call('webshop.shopping_cart.cart.get_terms_and_conditions', { terms_name })
+					frappe.call('webshop.webshop.shopping_cart.cart.get_terms_and_conditions', { terms_name })
 					.then(r => {
 						frappe.msgprint({
 							title: terms_name,
