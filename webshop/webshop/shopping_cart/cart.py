@@ -205,8 +205,8 @@ def request_for_quotation():
 @frappe.whitelist()
 def get_delivery_date():
 	quotation = _get_cart_quotation()
-    d_date = quotation.delivery_date
-    return d_date
+	d_date = quotation.delivery_date
+	return d_date
 
 @frappe.whitelist()
 def update_delivery_date(delivery_date=None):
