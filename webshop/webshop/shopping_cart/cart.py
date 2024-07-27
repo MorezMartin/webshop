@@ -177,6 +177,12 @@ def request_for_quotation():
 	return quotation.name
 
 @frappe.whitelist()
+def get_delivery_date():
+	quotation = _get_cart_quotation()
+    d_date = quotation.delivery_date
+    return d_date
+
+@frappe.whitelist()
 def update_delivery_date(delivery_date=None):
 	quotation = _get_cart_quotation()
 	minimum_d_day = frappe.db.get_single_value("Webshop Settings", "minimum_days_delivery_date")

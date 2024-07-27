@@ -1379,3 +1379,11 @@ body.product-page {
 .mt-minus-1 {
 	margin-top: -1rem;
 }
+
+.check {
+  visibility: hidden;
+}
+
+.active .check {
+  visibility: visible;
+}
