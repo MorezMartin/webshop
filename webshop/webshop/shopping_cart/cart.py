@@ -11,14 +11,14 @@ from frappe.utils.nestedset import get_root_of
 
 from erpnext.accounts.utils import get_account_name
 from webshop.webshop.doctype.webshop_settings.webshop_settings import (
-    get_shopping_cart_settings,
+	get_shopping_cart_settings,
 )
 from webshop.webshop.utils.product import get_web_item_qty_in_stock
 from erpnext.selling.doctype.quotation.quotation import _make_sales_order
 
 
 class WebsitePriceListMissingError(frappe.ValidationError):
-    pass
+	pass
 
 
 def set_cart_count(quotation=None):
@@ -179,8 +179,8 @@ def request_for_quotation():
 @frappe.whitelist()
 def get_delivery_date():
 	quotation = _get_cart_quotation()
-    d_date = quotation.delivery_date
-    return d_date
+	d_date = quotation.delivery_date
+	return d_date
 
 @frappe.whitelist()
 def update_delivery_date(delivery_date=None):
@@ -716,12 +716,12 @@ def get_wh_addresses(warehouses):
 	return out
 
 def get_address_docs(
-    doctype=None,
-    txt=None,
-    filters=None,
-    limit_start=0,
-    limit_page_length=20,
-    party=None,
+	doctype=None,
+	txt=None,
+	filters=None,
+	limit_start=0,
+	limit_page_length=20,
+	party=None,
 ):
 	if not party:
 		party = get_party()
