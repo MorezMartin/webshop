@@ -1409,3 +1409,11 @@ body.product-page {
 .w-fit {
 	width: fit-content !important;
 }
+
+.check {
+  visibility: hidden;
+}
+
+.active .check {
+  visibility: visible;
+}
