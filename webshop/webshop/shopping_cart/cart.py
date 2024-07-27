@@ -10,7 +10,7 @@ from erpnext.selling.doctype.quotation.quotation import _make_sales_order
 from frappe import _, throw
 from frappe.contacts.doctype.address.address import get_address_display
 from frappe.contacts.doctype.contact.contact import get_contact_name
-from frappe.utils import cint, cstr, flt, get_fullname, add_days, now, datetime, format_datetime, getdate
+from frappe.utils import cint, cstr, flt, get_fullname, add_days, now, datetime, format_datetime, get_datetime
 from frappe.utils.nestedset import get_root_of
 
 from webshop.webshop.doctype.webshop_settings.webshop_settings import (
@@ -206,9 +206,9 @@ def request_for_quotation():
 def update_delivery_date(delivery_date=None):
 	quotation = _get_cart_quotation()
 	minimum_d_day = frappe.db.get_single_value("Webshop Settings", "minimum_days_delivery_date")
-	minimum_d_date = getdate(add_days(now(), minimum_d_day))
+	minimum_d_date = get_datetime(add_days(now(), minimum_d_day))
 	if not isinstance(delivery_date, datetime.datetime):
-		d_date = getdate(delivery_date)
+		d_date = get_datetime(delivery_date)
 		if d_date < minimum_d_date:
 			frappe.throw(_("La date & l'heure de livraison minimales sont {0}").format(format_datetime(minimum_d_date)))
 		else:
@@ -466,7 +466,7 @@ def _get_cart_quotation(party=None):
 		qdoc = frappe.get_doc("Quotation", quotation[0].name)
 	else:
 		minimum_d_day = frappe.db.get_single_value("Webshop Settings", "minimum_days_delivery_date")
-		minimum_d_date = datetime.datetime.strptime(add_days(now(), minimum_d_day)[:19], '%Y-%m-%d %H:%M:%S' )
+		minimum_d_date = get_datetime(add_days(now(), minimum_d_day))
 		company = frappe.db.get_single_value("Webshop Settings", "company")
 		qdoc = frappe.get_doc(
 			{
