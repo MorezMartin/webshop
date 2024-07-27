@@ -43,7 +43,7 @@ def get_cart_quotation(doc=None):
 	addresses = get_address_docs(party=party)
 	click_n_collect_warehouses = frappe.db.get_all('Warehouse', {'avaible_on_website': True}, ['name', 'warehouse_name'])
 	click_n_collect_addresses = get_wh_addresses(click_n_collect_warehouses)
-	d_date = doc.delivery_date
+	d_date = doc.delivery_date or None
 	if doc.items:
 		payment_terms_template = update_payment_terms(get_shopping_cart_settings().payment_terms_template)
 		tc_name = update_tc(get_shopping_cart_settings().terms_and_conditions)
@@ -186,23 +186,17 @@ def get_delivery_date():
 def update_delivery_date(delivery_date=None):
 	quotation = _get_cart_quotation()
 	minimum_d_day = frappe.db.get_single_value("Webshop Settings", "minimum_days_delivery_date")
-	minimum_d_date = get_datetime(add_days(now(), minimum_d_day))
+	minimum_d_date = add_days(get_datetime(now()), minimum_d_day)
 	if not isinstance(delivery_date, datetime.datetime):
 		d_date = get_datetime(delivery_date)
-		if d_date < minimum_d_date:
-			frappe.throw(_("La date & l'heure de livraison minimales sont {0}").format(format_datetime(minimum_d_date)))
-		else:
-			quotation.delivery_date = d_date
-			quotation.flags.ignore_permissions = True
-			quotation.save()
 	else:
-		d_date = get_datetime(delivery_date)
-		if d_date < minimum_d_date:
-			frappe.throw(_("La date & l'heure de livraison minimales sont {0}").format(format_datetime(minimum_d_date)))
-		else:
-			quotation.delivery_date = d_date
-			quotation.flags.ignore_permissions = True
-			quotation.save()
+		d_date = delivery_date
+	if d_date < minimum_d_date:
+		frappe.throw(_("La date & l'heure de livraison minimales sont {0}").format(format_datetime(minimum_d_date)))
+	else:
+		quotation.delivery_date = d_date
+		quotation.flags.ignore_permissions = True
+		quotation.save()
 
 	return d_date
 
@@ -453,8 +447,6 @@ def _get_cart_quotation(party=None):
 	if quotation:
 		qdoc = frappe.get_doc("Quotation", quotation[0].name)
 	else:
-		minimum_d_day = frappe.db.get_single_value("Webshop Settings", "minimum_days_delivery_date")
-		minimum_d_date = get_datetime(add_days(now(), minimum_d_day))
 		company = frappe.db.get_single_value("Webshop Settings", "company")
 		qdoc = frappe.get_doc(
 			{
@@ -475,7 +467,6 @@ def _get_cart_quotation(party=None):
 			"Contact", {"email_id": frappe.session.user}
 		)
 		qdoc.contact_email = frappe.session.user
-		qdoc.delivery_date = minimum_d_date
 
 		qdoc.flags.ignore_permissions = True
 		qdoc.run_method("set_missing_values")
