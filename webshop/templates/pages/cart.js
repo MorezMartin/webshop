@@ -240,7 +240,7 @@ $.extend(shopping_cart, {
 		var delivery_date = frappe.ui.form.make_control({
 			df: {
 				fieldtype: 'Datetime',
-				default: function() {
+				placeholder: function() {
 					frappe.call ({
 						type: "POST",
 						method: "webshop.webshop.shopping_cart.get_delivery_date"
