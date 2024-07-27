@@ -246,6 +246,8 @@ $.extend(shopping_cart, {
 		var delivery_date = frappe.ui.form.make_control({
 			df: {
 				fieldtype: 'Datetime',
+				fieldname: 'delivery_date',
+				label: '{{_("Pick or Delivery Date")}}',
 				placeholder: function() {
 					frappe.call ({
 						type: "POST",
@@ -253,8 +255,6 @@ $.extend(shopping_cart, {
 					})
 
 				},
-				fieldname: 'delivery_date',
-				label: '{{_("Pick or Delivery Date")}}',
 				hide_timezone: true,
 			},
 			change: function() { 
