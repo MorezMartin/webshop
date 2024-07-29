@@ -20,7 +20,7 @@ from webshop.webshop.utils.product import get_web_item_qty_in_stock
 
 
 DATE_FORMAT = frappe.db.get_single_value("System Settings", "date_format")
-TIME_FORMAT = frappe.db.get_single.value("System Settings", "time_format")
+TIME_FORMAT = frappe.db.get_single_value("System Settings", "time_format")
 DATETIME_FORMAT = f"{DATE_FORMAT} {TIME_FORMAT}"
 
 class WebsitePriceListMissingError(frappe.ValidationError):
