@@ -17,8 +17,8 @@ from webshop.webshop.utils.product import get_web_item_qty_in_stock
 from erpnext.selling.doctype.quotation.quotation import _make_sales_order
 
 
-DATE_FORMAT = frappe.db.get_single_value("System Settings", "date_format")
-TIME_FORMAT = frappe.db.get_single_value("System Settings", "time_format")
+DATE_FORMAT = frappe.db.get_single_value("System Settings", "date_format").replace("mm", "%m").replace("dd", "%d").replace("yyyy", "%Y")
+TIME_FORMAT = frappe.db.get_single_value("System Settings", "time_format").replace("HH", "%H").replace("mm", "%M").replace("ss", "%S")
 DATETIME_FORMAT = f"{DATE_FORMAT} {TIME_FORMAT}"
 
 class WebsitePriceListMissingError(frappe.ValidationError):
