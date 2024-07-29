@@ -18,7 +18,7 @@ from erpnext.selling.doctype.quotation.quotation import _make_sales_order
 
 
 DATE_FORMAT = frappe.db.get_single_value("System Settings", "date_format")
-TIME_FORMAT = frappe.db.get_single.value("System Settings", "time_format")
+TIME_FORMAT = frappe.db.get_single_value("System Settings", "time_format")
 DATETIME_FORMAT = f"{DATE_FORMAT} {TIME_FORMAT}"
 
 class WebsitePriceListMissingError(frappe.ValidationError):
