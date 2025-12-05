@@ -641,6 +641,8 @@ def get_party(user=None):
 			}
 		)
 
+		customer.append("portal_users", {"user": user})
+		
 		if debtors_account:
 			customer.update(
 				{
@@ -649,7 +651,6 @@ def get_party(user=None):
 					]
 				}
 			)
-
 		customer.flags.ignore_mandatory = True
 		customer.insert(ignore_permissions=True)
 
