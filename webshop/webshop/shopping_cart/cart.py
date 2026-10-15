@@ -19,10 +19,6 @@ from webshop.webshop.doctype.webshop_settings.webshop_settings import (
 from webshop.webshop.utils.product import get_web_item_qty_in_stock
 
 
-DATE_FORMAT = frappe.db.get_single_value("System Settings", "date_format").replace("mm", "%m").replace("dd", "%d").replace("yyyy", "%Y")
-TIME_FORMAT = frappe.db.get_single_value("System Settings", "time_format").replace("HH", "%H").replace("mm", "%M").replace("ss", "%S")
-DATETIME_FORMAT = f"{DATE_FORMAT} {TIME_FORMAT}"
-
 class WebsitePriceListMissingError(frappe.ValidationError):
 	pass
 
@@ -216,12 +212,12 @@ def get_delivery_date():
 def update_delivery_date(delivery_date=None):
 	quotation = _get_cart_quotation()
 	minimum_d_day = frappe.db.get_single_value("Webshop Settings", "minimum_days_delivery_date")
-	minimum_d_date = add_days(get_datetime(now(), datetime_format=DATETIME_FORMAT), minimum_d_day)
+	minimum_d_date = add_days(get_datetime(now()), minimum_d_day)
 	if delivery_date == None:
 		d_date = minimum_d_date
 		return d_date
 	if not isinstance(delivery_date, datetime.datetime):
-		d_date = get_datetime(delivery_date, datetime_format=DATETIME_FORMAT)
+		d_date = get_datetime(delivery_date)
 	else:
 		d_date = delivery_date
 	if d_date < minimum_d_date:
@@ -490,7 +486,7 @@ def _get_cart_quotation(party=None):
 		qdoc.contact_person = frappe.db.get_value("Contact", {"email_id": frappe.session.user})
 		qdoc.contact_email = frappe.session.user
 		minimum_d_day = frappe.db.get_single_value("Webshop Settings", "minimum_days_delivery_date")
-		minimum_d_date = add_days(get_datetime(now(), datetime_format=DATETIME_FORMAT), minimum_d_day)
+		minimum_d_date = add_days(get_datetime(now()), minimum_d_day)
 		qdoc.delivery_date = minimum_d_date
 
 		qdoc.flags.ignore_permissions = True
