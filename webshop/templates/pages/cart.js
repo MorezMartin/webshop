@@ -248,25 +248,31 @@ $.extend(shopping_cart, {
 				fieldtype: 'Datetime',
 				fieldname: 'delivery_date',
 				label: '{{_("Pick or Delivery Date")}}',
-				placeholder: function() {
-					frappe.call ({
-						type: "POST",
-						method: "webshop.webshop.shopping_cart.cart.get_delivery_date"
-					})
-
-				},
 				hide_timezone: true,
 			},
-			change: function() { 
+			change: function() {
+				// Debounce: le DateTime déclenche change à chaque incrément (slider minutes),
+				// et chaque appel faisait un save concurrence -> "document modifié après ouverture".
 				var d_date = this.$input.val();
-				frappe.call({
-					type: "POST",
-					method: "webshop.webshop.shopping_cart.cart.update_delivery_date",
-					args: { delivery_date: d_date }
-				})
+				clearTimeout(window.__dd_timer);
+				window.__dd_timer = setTimeout(() => {
+					frappe.call({
+						type: "POST",
+						method: "webshop.webshop.shopping_cart.cart.update_delivery_date",
+						args: { delivery_date: d_date }
+					});
+				}, 600);
 			},
 			parent: $('#delivery_date'),
 			render_input: true
+		});
+		// restaurer la date déjà enregistrée (avant: placeholder() appelait get_delivery_date
+		// sans exploiter la réponse -> valeur perdue au refresh).
+		frappe.call({
+			type: "POST",
+			method: "webshop.webshop.shopping_cart.cart.get_delivery_date"
+		}).then((r) => {
+			if (r && r.message) delivery_date.set_value(r.message);
 		});
 	},
 
