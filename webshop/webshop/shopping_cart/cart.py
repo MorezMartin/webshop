@@ -208,7 +208,10 @@ def get_delivery_date():
 	# date seule dd/mm/yyyy : le contrôle Datetime du panier (hide_timezone, datepicker
 	# date-seule) rejette "dd/mm/yyyy HH:MM" -> msgprint "must be in format dd/mm/yyyy"
 	# au chargement du panier (constat 13/11). L'heure reste stockée côté serveur.
-	d_date = format_datetime(quotation.delivery_date, "dd/mm/yyyy")
+	# format SYSTÈME (yyyy-mm-dd HH:mm:ss) : c'est le contrat du contrôle Datetime
+	# (frappe.datetime.str_to_obj/convert_to_user_tz) ; les formats "user" (dd/mm/yyyy)
+	# servent à l'affichage, pas à set_value — cf msgprint "20/58/2026" (constat 13/11).
+	d_date = str(quotation.delivery_date) if quotation.delivery_date else None
 	return d_date
 
 @frappe.whitelist()
