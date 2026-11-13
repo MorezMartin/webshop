@@ -205,7 +205,10 @@ def request_for_quotation():
 @frappe.whitelist()
 def get_delivery_date():
 	quotation = _get_cart_quotation()
-	d_date = format_datetime(quotation.delivery_date)
+	# date seule dd/mm/yyyy : le contrôle Datetime du panier (hide_timezone, datepicker
+	# date-seule) rejette "dd/mm/yyyy HH:MM" -> msgprint "must be in format dd/mm/yyyy"
+	# au chargement du panier (constat 13/11). L'heure reste stockée côté serveur.
+	d_date = format_datetime(quotation.delivery_date, "dd/mm/yyyy")
 	return d_date
 
 @frappe.whitelist()
